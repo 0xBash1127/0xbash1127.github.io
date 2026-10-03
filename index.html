@@ -81,7 +81,7 @@ section + section { margin-top: 4.5rem; }
 
 /* Certification trace */
 .trace-wrap { overflow-x: auto; padding-bottom: .5rem; }
-.trace { list-style: none; margin: 0; padding: 0; display: flex; min-width: 60rem; }
+.trace { list-style: none; margin: 0; padding: 0; display: flex; min-width: 40rem; }
 .trace li { flex: 1; position: relative; padding: 2.4rem 1rem 0 0; }
 .trace li::before { /* pad */
   content: ""; position: absolute; left: 0; top: .2rem; width: 1.5rem; height: 1.5rem; border-radius: 50%;
@@ -116,12 +116,31 @@ section + section { margin-top: 4.5rem; }
 .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
 .tags li { font-size: .85rem; padding: .1rem .55rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--muted); }
 .links { display: flex; gap: 1rem; margin-top: .75rem; font-size: .95rem; }
-.status { font-size: .88rem; white-space: nowrap; display: inline-flex; align-items: center; gap: .45rem; padding-top: .15rem; }
+.status { align-self: start; font-size: .88rem; white-space: nowrap; display: inline-flex; align-items: center; gap: .45rem; padding-top: .15rem; }
 .status::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; border: 2px solid currentColor; }
 .status.done { color: var(--trace); } .status.done::before { background: currentColor; }
 .status.progress { color: var(--amber); }
 .status.planned { color: var(--muted); } .status.planned::before { border-style: dashed; }
 .more { display: inline-block; margin-top: 1.5rem; font-weight: 500; }
+
+
+/* OSCE3 progress line */
+.osce3-line { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+.osce3-line .label { font-weight: 500; }
+.osce3-line .label .mono { font-weight: 500; }
+.osce3-line .note { color: var(--muted); font-size: .95rem; }
+.segments { display: grid; grid-template-columns: repeat(3, 2.75rem); gap: 5px; }
+.seg { height: 8px; border-radius: 3px; background: repeating-linear-gradient(90deg, var(--rule) 0 5px, transparent 5px 9px); }
+.seg.earned { background: var(--trace); }
+.seg.progress { background: linear-gradient(90deg, var(--amber) 0 50%, var(--rule) 50%); }
+.trace .tag { display: inline-block; margin-top: .4rem; font-size: .8rem; color: var(--muted); border: 1px solid var(--rule); border-radius: 999px; padding: 0 .5rem; }
+
+/* Certifications (About) */
+.cert-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.cert-list li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: .25rem 1rem; padding: .85rem 0; border-bottom: 1px solid var(--rule); }
+.cert-list .code { font-family: var(--mono); font-weight: 500; }
+.cert-list .full { display: block; }
+.cert-list .issuer { display: block; color: var(--muted); font-size: .92rem; }
 
 /* Filters */
 .filters { display: flex; flex-wrap: wrap; gap: .5rem; margin: 2rem 0 1.5rem; }
@@ -147,6 +166,13 @@ tr:last-child td { border-bottom: none; }
 .skills h3 { font-size: 1rem; margin: 1.5rem 0 .6rem; }
 .skills h3:first-child { margin-top: 0; }
 .contact { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+
+.sub-h { font-size: 1.15rem; margin: 2.5rem 0 1rem; }
+.edu { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.edu li { padding: 1rem 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.edu .deg { font-weight: 500; display: block; }
+.edu .school { color: var(--muted); display: block; }
+.edu .yr { color: var(--muted); }
 
 /* Footer */
 .site-footer { border-top: 1px solid var(--rule); color: var(--muted); font-size: .95rem; }
@@ -201,8 +227,9 @@ tr:last-child td { border-bottom: none; }
       </section>
 
       <section aria-labelledby="path-h">
-        <h2 id="path-h">Certification path</h2>
+        <h2 id="path-h">Roadmap for 2026–2027</h2>
         <div class="trace-wrap"><ol class="trace" id="trace"></ol></div>
+        <div class="osce3-line" id="osce3"></div>
       </section>
 
       <section aria-labelledby="recent-h">
@@ -233,7 +260,13 @@ tr:last-child td { border-bottom: none; }
     <div class="wrap">
       <h1 tabindex="-1">About</h1>
       <div class="about-grid">
-        <div id="bio"></div>
+        <div>
+          <div id="bio"></div>
+          <h2 class="sub-h">Education</h2>
+          <ul class="edu" id="edu"></ul>
+          <h2 class="sub-h">Certifications</h2>
+          <ul class="cert-list" id="cert-list"></ul>
+        </div>
         <div>
           <div class="skills" id="skills"></div>
           <h3 style="font-size:1rem;margin:2rem 0 .6rem">Get in touch</h3>
@@ -254,7 +287,7 @@ tr:last-child td { border-bottom: none; }
 <script>
 /* ============================================================
    EDIT YOUR CONTENT HERE. Everything on the site comes from this object.
-   status options: certs  -> "earned" | "progress" | "planned"
+   status options: roadmap -> "earned" | "progress" | "planned"
                    projects -> "done" | "progress" | "planned"
    ============================================================ */
 const SITE = {
@@ -266,16 +299,16 @@ const SITE = {
     ["Up next", "CRTO"],
     ["Hunting", "My first CVE"]
   ],
-  certs: [
-    { code: "A+",        issuer: "CompTIA", status: "earned" },
-    { code: "Network+",  issuer: "CompTIA", status: "earned" },
-    { code: "Security+", issuer: "CompTIA", status: "earned" },
-    { code: "CySA+",     issuer: "CompTIA", status: "earned" },
-    { code: "PenTest+",  issuer: "CompTIA", status: "earned" },
-    { code: "GPEN",      issuer: "GIAC",    status: "earned" },
-    { code: "OSCP",      issuer: "OffSec",  status: "earned" },
-    { code: "OSED",      issuer: "OffSec",  status: "progress" },
-    { code: "CRTO",      issuer: "Zero-Point Security", status: "planned", when: "up next" }
+  roadmap: [   /* upcoming certs, shown on Home. status: "earned" | "progress" | "planned" */
+    { code: "OSED", issuer: "OffSec", status: "progress", osce3: true },
+    { code: "CRTO", issuer: "Zero-Point Security", status: "planned" },
+    { code: "OSEP", issuer: "OffSec", status: "planned", osce3: true },
+    { code: "OSWE", issuer: "OffSec", status: "planned", osce3: true }
+  ],
+  earned: [    /* certifications you hold, shown on About */
+    { code: "OSCP",     name: "Offensive Security Certified Professional", issuer: "OffSec" },
+    { code: "GPEN",     name: "GIAC Penetration Tester", issuer: "GIAC" },
+    { code: "CompTIA",  name: "PenTest+, CySA+, Security+, Network+, A+", issuer: "CompTIA" }
   ],
   projects: [
     { kind: "Exploit development", title: "OSED scripts", status: "progress",
@@ -307,8 +340,11 @@ const SITE = {
   ],
   bio: [
     "My path into cybersecurity started in 2018, while I was serving as a wheeled vehicle mechanic in the U.S. Army.",
-    "Since then I've worked across a wide slice of the field, from basic system administration to penetration testing to exploit development. Along the way I've earned the OSCP, GPEN, and CompTIA's A+, Network+, Security+, CySA+, and PenTest+. I'm currently studying for the OSED, with CRTO next.",
+    "Since then I've worked across a wide slice of the field, from basic system administration to penetration testing to exploit development. I'm currently studying for the OSED, with CRTO, OSEP, and OSWE on the roadmap through 2027.",
     "My goal is to become a vulnerability researcher: finding real bugs, understanding them down to the instruction level, and disclosing them responsibly. Hardware hacking is the next frontier once I have the bench time."
+  ],
+  education: [
+    { degree: "B.S. Cybersecurity and Information Assurance", school: "Western Governors University", year: "" }
   ],
   skills: [
     ["Exploit development", ["WinDbg", "x86 assembly", "ROP chains", "Shellcode", "IDA"]],
@@ -336,11 +372,12 @@ $("year").textContent = new Date().getFullYear();
 
 $("now-list").innerHTML = SITE.now.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
 
-$("trace").innerHTML = SITE.certs.map((c, i) => `
+$("trace").innerHTML = SITE.roadmap.map((c, i) => `
   <li class="${esc(c.status)}" style="--i:${i}">
     <span class="code">${esc(c.code)}</span>
     <span class="meta">${esc(c.issuer)}</span>
-    <span class="state">${esc(CERT_STATE[c.status] || "")}${c.when ? ", " + esc(c.when) : ""}</span>
+    <span class="state">${esc(CERT_STATE[c.status] || "")}</span>
+    ${c.osce3 ? `<span class="tag">Counts toward OSCE3</span>` : ""}
   </li>`).join("");
 
 const itemHTML = p => `
@@ -354,6 +391,18 @@ const itemHTML = p => `
     </div>
     <span class="status ${esc(p.status)}">${esc(STATUS[p.status] || "")}</span>
   </li>`;
+
+const osce = SITE.roadmap.filter(c => c.osce3);
+const osceDone = osce.filter(c => c.status === "earned").length;
+$("osce3").innerHTML = `
+  <span class="label">Toward <span class="mono">OSCE3</span></span>
+  <span class="segments" role="img" aria-label="${osceDone} of ${osce.length} OSCE3 exams earned">
+    ${osce.map(c => `<span class="seg ${esc(c.status)}"></span>`).join("")}</span>
+  <span class="note">${osceDone} of ${osce.length} earned. Passing ${osce.map(c => c.code).join(", ").replace(/, ([^,]*)$/, ", and $1")} awards OffSec's expert-level OSCE3.</span>`;
+
+$("cert-list").innerHTML = SITE.earned.map(c => `<li>
+  <span class="code">${esc(c.code)}</span>
+  <span><span class="full">${esc(c.name)}</span>${(c.name.startsWith(c.issuer) || c.code === c.issuer) ? "" : `<span class="issuer">${esc(c.issuer)}</span>`}</span></li>`).join("");
 
 $("recent").innerHTML = SITE.projects.slice(0, 3).map(itemHTML).join("");
 
@@ -385,30 +434,43 @@ $("cves").innerHTML = SITE.cves.length ? `
   </div></div>`;
 
 $("bio").innerHTML = SITE.bio.map(p => `<p>${esc(p)}</p>`).join("");
+$("edu").innerHTML = SITE.education.map(e => `<li><div>
+  <span class="deg">${esc(e.degree)}</span><span class="school">${esc(e.school)}</span></div>
+  ${e.year ? `<span class="yr">${esc(e.year)}</span>` : ""}</li>`).join("");
 $("skills").innerHTML = SITE.skills.map(([h, items]) =>
   `<h3>${esc(h)}</h3><ul class="tags">${items.map(i => `<li>${esc(i)}</li>`).join("")}</ul>`).join("");
 $("contact").innerHTML = SITE.contact.map(([l, h, t]) =>
   `<li><span style="color:var(--muted)">${esc(l)}</span><br><a href="${esc(h)}">${esc(t)}</a></li>`).join("");
 $("footer-links").innerHTML = SITE.contact.map(([l, h]) => `<a href="${esc(h)}">${esc(l)}</a>`).join("");
 
-/* Simple hash router: #/ , #/projects , #/about */
+/* Router: links switch pages directly in JS (works inside sandboxed viewers),
+   and the URL hash is kept in sync when the browser allows it (#/, #/projects, #/about). */
 const TITLES = { "": "Home", projects: "Projects", about: "About" };
-function route(initial) {
-  let r = location.hash.replace(/^#\/?/, "");
+const fromHash = () => { let h = ""; try { h = location.hash.replace(/^#\/?/, ""); } catch (e) {} return h in TITLES ? h : ""; };
+function show(r, moveFocus) {
   if (!(r in TITLES)) r = "";
   document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.dataset.page === r));
   document.querySelectorAll(".nav a").forEach(a => {
-    const target = a.getAttribute("href").replace(/^#\/?/, "");
-    if (target === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
   document.title = `${TITLES[r]} | ${SITE.name}`;
-  if (!initial) {
+  if (moveFocus) {
     window.scrollTo(0, 0);
     const h = document.querySelector(".page.active h1"); if (h) h.focus({ preventScroll: true });
   }
 }
-window.addEventListener("hashchange", () => route(false));
-route(true);
+document.querySelectorAll('a[href^="#/"]').forEach(a => a.dataset.route = a.getAttribute("href").replace(/^#\/?/, ""));
+document.addEventListener("click", e => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault();
+  const r = a.getAttribute("href").replace(/^#\/?/, "");
+  show(r, true);
+  try { history.pushState(null, "", "#/" + r); } catch (err) {}
+});
+window.addEventListener("popstate", () => show(fromHash(), true));
+window.addEventListener("hashchange", () => show(fromHash(), true));
+show(fromHash(), false);
 </script>
 </body>
 </html>
